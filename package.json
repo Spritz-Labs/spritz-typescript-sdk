@@ -1,0 +1,54 @@
+{
+    "name": "@spritz-labs/sdk",
+    "version": "0.1.0",
+    "description": "TypeScript SDK for building apps on Spritz — censorship-resistant Web3 chat",
+    "author": "Spritz Labs",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/Spritz-Labs/spritz-typescript-sdk.git"
+    },
+    "main": "./dist/index.js",
+    "module": "./dist/index.mjs",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": {
+            "import": {
+                "types": "./dist/index.d.mts",
+                "default": "./dist/index.mjs"
+            },
+            "require": {
+                "types": "./dist/index.d.ts",
+                "default": "./dist/index.js"
+            }
+        }
+    },
+    "files": [
+        "dist",
+        "README.md",
+        "LICENSE"
+    ],
+    "scripts": {
+        "build": "tsup",
+        "dev": "tsup --watch",
+        "typecheck": "tsc --noEmit",
+        "clean": "rm -rf dist"
+    },
+    "devDependencies": {
+        "tsup": "^8.0.0",
+        "typescript": "^5.4.0"
+    },
+    "engines": {
+        "node": ">=18.0.0"
+    },
+    "keywords": [
+        "spritz",
+        "web3",
+        "chat",
+        "sdk",
+        "ethereum",
+        "waku",
+        "logos",
+        "decentralized"
+    ]
+}
