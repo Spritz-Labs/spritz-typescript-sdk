@@ -31,8 +31,14 @@ export function SpritzProvider({ children }: { children: React.ReactNode }) {
 
   const client = useMemo(() => {
     if (!API_KEY) return null;
+    // In dev, use current origin so Vite proxy forwards /api to app.spritz.chat (avoids CORS)
+    const baseUrl =
+      import.meta.env.DEV && typeof window !== "undefined"
+        ? window.location.origin
+        : undefined;
     const c = new SpritzClient({
       apiKey: API_KEY,
+      baseUrl,
       sessionToken: sessionToken ?? undefined,
     });
     if (sessionToken) c.sessionToken = sessionToken;

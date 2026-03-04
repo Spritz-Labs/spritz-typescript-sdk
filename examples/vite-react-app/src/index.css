@@ -1,13 +1,34 @@
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap");
+
 :root {
-  --bg: #0f0f12;
-  --surface: #1a1a1f;
-  --border: #2a2a32;
-  --text: #e8e8ed;
-  --muted: #8888a0;
-  --accent: #6366f1;
-  --accent-hover: #818cf8;
-  --error: #ef4444;
+  /* Brand: Primary Orange, Secondary Orange, Light Coral, Cream, Dark Orange, Deep Orange */
+  --primary: #ff5500;
+  --primary-hover: #fb8d22;
+  --coral: #ffbba7;
+  --cream: #fff0e0;
+  --dark-orange: #e04d00;
+  --deep-orange: #cc4400;
+
+  --bg: #0c0d10;
+  --bg-elevated: #12141a;
+  --surface: #181b22;
+  --surface-hover: #1e2129;
+  --border: #2a2e3a;
+  --border-light: #363b48;
+  --text: #e8eaef;
+  --text-secondary: #9ca3b4;
+  --muted: #6b7280;
+  --accent: var(--primary);
+  --accent-hover: var(--primary-hover);
+  --accent-muted: rgba(255, 187, 167, 0.2);
   --success: #22c55e;
+  --success-muted: rgba(34, 197, 94, 0.15);
+  --error: #ef4444;
+  --error-muted: rgba(239, 68, 68, 0.15);
+  --radius: 10px;
+  --radius-sm: 6px;
+  --shadow: 0 4px 24px rgba(204, 68, 0, 0.25);
+  --shadow-deep: 0 8px 32px rgba(204, 68, 0, 0.2);
 }
 
 * {
@@ -16,18 +37,23 @@
 
 body {
   margin: 0;
-  font-family: "DM Sans", system-ui, -apple-system, sans-serif;
+  font-family: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
   background: var(--bg);
   color: var(--text);
   min-height: 100vh;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
 }
 
 #root {
   min-height: 100vh;
 }
 
-input, button, textarea {
-  font: inherit;
+input,
+button,
+textarea,
+select {
+  font-family: inherit;
 }
 
 button {
@@ -37,4 +63,13 @@ button {
 button:disabled {
   cursor: not-allowed;
   opacity: 0.6;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
 }
