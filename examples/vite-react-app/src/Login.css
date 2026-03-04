@@ -52,8 +52,54 @@
 }
 
 .login-card .muted {
-  margin: 0 0 1.5rem;
+  margin: 0 0 1rem;
   color: var(--text-secondary);
+  font-size: 0.9375rem;
+}
+
+.auth-methods {
+  display: flex;
+  gap: 0.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.auth-method-tab {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+}
+
+.auth-method-tab:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
+.auth-method-tab.active {
+  background: var(--accent-muted);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.auth-action {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.auth-hint {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.btn-block {
+  width: 100%;
+  padding: 0.75rem 1rem;
   font-size: 0.9375rem;
 }
 

@@ -68,7 +68,12 @@ export class HttpClient {
         let errorMessage = `HTTP ${response.status}`;
         try {
             const body = await response.json();
-            errorMessage = body.error || body.message || errorMessage;
+            const err = body.error;
+            errorMessage =
+                (typeof err === "object" && err && "message" in err && String(err.message)) ||
+                (typeof body.error === "string" ? body.error : null) ||
+                body.message ||
+                errorMessage;
         } catch {
             // Use status-based message
         }
@@ -89,20 +94,29 @@ export class HttpClient {
         }
     }
 
-    async get<T = unknown>(path: string, params?: Record<string, string | number | boolean | undefined>): Promise<T> {
+    async get<T = unknown>(
+        path: string,
+        params?: Record<string, string | number | boolean | undefined>,
+        extraHeaders?: Record<string, string>
+    ): Promise<T> {
         const url = this.buildUrl(path, params);
         const response = await fetch(url, {
             method: "GET",
-            headers: this.buildHeaders(),
+            headers: { ...this.buildHeaders(), ...extraHeaders },
         });
         return this.handleResponse<T>(response);
     }
 
-    async post<T = unknown>(path: string, body?: unknown): Promise<T> {
-        const url = this.buildUrl(path);
+    async post<T = unknown>(
+        path: string,
+        body?: unknown,
+        params?: Record<string, string | number | boolean | undefined>,
+        extraHeaders?: Record<string, string>
+    ): Promise<T> {
+        const url = params ? this.buildUrl(path, params) : this.buildUrl(path);
         const response = await fetch(url, {
             method: "POST",
-            headers: this.buildHeaders(),
+            headers: { ...this.buildHeaders(), ...extraHeaders },
             body: body !== undefined ? JSON.stringify(body) : undefined,
         });
         return this.handleResponse<T>(response);

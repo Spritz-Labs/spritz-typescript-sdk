@@ -54,9 +54,11 @@ export class ChannelsModule {
 
     /**
      * Join a channel by ID.
+     * Backend may require userAddress in the body; pass it from session (e.g. (await client.auth.getSession()).userAddress).
      */
-    async join(channelId: string): Promise<{ success: boolean }> {
-        return this.http.post(`/api/channels/${channelId}/join`, {});
+    async join(channelId: string, userAddress?: string): Promise<{ success: boolean }> {
+        const body = userAddress ? { userAddress } : {};
+        return this.http.post(`/api/channels/${channelId}/join`, body);
     }
 
     /**

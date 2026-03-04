@@ -33,27 +33,48 @@ export class AuthModule {
 
     // ── Wallet (SIWE) ──
 
+    private walletAddressHeaders(address: string): Record<string, string> {
+        return {
+            "X-Address": address,
+            "X-User-Address": address,
+            "X-Wallet-Address": address,
+        };
+    }
+
     /**
      * Request a SIWE challenge message for the given address.
-     * The user must sign this message with their wallet.
+     * Sends address in query params and headers for backend compatibility.
      */
     async loginWithWallet(address: string): Promise<SiweChallenge> {
-        return this.http.get<SiweChallenge>("/api/auth/verify", { address });
+        return this.http.get<SiweChallenge>(
+            "/api/auth/verify",
+            { address, userAddress: address, user_address: address },
+            this.walletAddressHeaders(address)
+        );
     }
 
     /**
      * Verify a signed SIWE message and establish a session.
+     * Sends address in query, body, and headers for backend compatibility.
      */
     async verifyWallet(
         address: string,
         signature: string,
         message: string
     ): Promise<AuthResponse> {
-        const res = await this.http.post<AuthResponse>("/api/auth/verify", {
+        const body = {
             address,
-            signature,
+            userAddress: address,
+            user_address: address,
             message,
-        });
+            signature,
+        };
+        const res = await this.http.post<AuthResponse>(
+            "/api/auth/verify",
+            body,
+            { address, userAddress: address, user_address: address },
+            this.walletAddressHeaders(address)
+        );
         if (res.sessionToken) {
             this.setToken(res.sessionToken);
         }

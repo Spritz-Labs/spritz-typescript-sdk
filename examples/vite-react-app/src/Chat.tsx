@@ -96,7 +96,8 @@ export function Chat() {
     if (!client || ch.is_member) return;
     try {
       setError(null);
-      await client.channels.join(ch.id);
+      const session = await client.auth.getSession();
+      await client.channels.join(ch.id, session.userAddress);
       await loadChannels();
       const updated = channels.map((c) => (c.id === ch.id ? { ...c, is_member: true } : c));
       setSelectedChannel(updated.find((c) => c.id === ch.id) ?? ch);
