@@ -4,7 +4,7 @@ import { useSpritz } from "./SpritzContext";
 import type { PublicChannel, ChannelMessage } from "@spritz-labs/sdk";
 import "./Chat.css";
 
-const POLL_INTERVAL_MS = 5000;
+const POLL_INTERVAL_MS = 25000; // 25s – comfortable for full-screen demo (was 5s)
 
 function formatTime(dateStr: string) {
   const d = new Date(dateStr);

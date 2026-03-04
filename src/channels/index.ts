@@ -56,7 +56,7 @@ export class ChannelsModule {
      * Join a channel by ID.
      */
     async join(channelId: string): Promise<{ success: boolean }> {
-        return this.http.post(`/api/channels/${channelId}/join`);
+        return this.http.post(`/api/channels/${channelId}/join`, {});
     }
 
     /**
