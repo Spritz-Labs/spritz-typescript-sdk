@@ -97,7 +97,12 @@ export function Chat() {
     try {
       setError(null);
       const session = await client.auth.getSession();
-      await client.channels.join(ch.id, session.userAddress);
+      const userAddress = session?.userAddress ?? (session as { session?: { userAddress?: string } })?.session?.userAddress;
+      if (!userAddress) {
+        setError("Session missing user address. Try signing out and back in.");
+        return;
+      }
+      await client.channels.join(ch.id, userAddress);
       await loadChannels();
       const updated = channels.map((c) => (c.id === ch.id ? { ...c, is_member: true } : c));
       setSelectedChannel(updated.find((c) => c.id === ch.id) ?? ch);

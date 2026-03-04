@@ -26,9 +26,14 @@ export class AuthModule {
 
     /**
      * Get current session info. Requires a valid session token.
+     * Normalizes nested response shape ({ session: { userAddress, ... } }) to flat SessionPayload.
      */
     async getSession(): Promise<SessionPayload> {
-        return this.http.get<SessionPayload>("/api/auth/session");
+        const raw = await this.http.get<SessionPayload | { session: SessionPayload; authenticated?: boolean }>("/api/auth/session");
+        if (raw && typeof raw === "object" && "session" in raw && raw.session && typeof raw.session === "object") {
+            return { ...raw.session, authenticated: (raw as { authenticated?: boolean }).authenticated ?? true };
+        }
+        return raw as SessionPayload;
     }
 
     // ── Wallet (SIWE) ──
