@@ -14,7 +14,7 @@ npm install @spritz-labs/sdk
 import { SpritzClient } from "@spritz-labs/sdk";
 
 const spritz = new SpritzClient({
-    apiKey: "sk_live_...", // Get your API key at app.spritz.chat
+    apiKey: "sk_live_...", // Get your API key in app.spritz.chat under Settings
 });
 
 // Login with email
@@ -209,13 +209,36 @@ const session = await spritz.auth.getSession();
 
 ## Configuration
 
+You need an API key to use the SDK. Get one by signing in at [app.spritz.chat](https://app.spritz.chat) and going to **Settings** to create or copy your API key.
+
 ```typescript
 const spritz = new SpritzClient({
-    apiKey: "sk_live_...",               // Required: your developer API key
+    apiKey: "sk_live_...",               // Required: get it in app.spritz.chat under Settings
     baseUrl: "https://app.spritz.chat",  // Optional: defaults to production
     sessionToken: "saved-jwt-token",     // Optional: restore a previous session
 });
 ```
+
+## Branding
+
+Use the built-in constants for consistent Spritz branding in your auth UI (e.g. login screens):
+
+```typescript
+import { SPRITZ_APP_URL, SPRITZ_BRANDING } from "@spritz-labs/sdk";
+
+// Single URL constant
+console.log(SPRITZ_APP_URL); // "https://app.spritz.chat"
+
+// Default copy and links for auth screens
+console.log(SPRITZ_BRANDING.name);           // "Spritz"
+console.log(SPRITZ_BRANDING.appUrl);         // "https://app.spritz.chat"
+console.log(SPRITZ_BRANDING.appHost);        // "app.spritz.chat"
+console.log(SPRITZ_BRANDING.signInHeading);  // "Sign in with Spritz"
+console.log(SPRITZ_BRANDING.signInSubtext);  // "Use your email to continue..."
+console.log(SPRITZ_BRANDING.poweredByLabel);  // "Powered by"
+```
+
+Use these in your login form so users see consistent Spritz branding and links to [app.spritz.chat](https://app.spritz.chat).
 
 ## Requirements
 
