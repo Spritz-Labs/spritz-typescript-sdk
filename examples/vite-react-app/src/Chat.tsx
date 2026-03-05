@@ -34,6 +34,7 @@ export function Chat() {
   const [createName, setCreateName] = useState("");
   const [createDescription, setCreateDescription] = useState("");
   const [createCategory, setCreateCategory] = useState("general");
+  const [createMessagingType, setCreateMessagingType] = useState<"standard" | "waku">("standard");
   const [creating, setCreating] = useState(false);
 
   useEffect(() => {
@@ -156,7 +157,7 @@ export function Chat() {
         name,
         description: createDescription.trim() || undefined,
         category: createCategory || "general",
-        messagingType: "standard",
+        messagingType: createMessagingType,
         creatorAddress: userAddress,
       });
       await client.channels.join(channel.id, userAddress);
@@ -166,6 +167,7 @@ export function Chat() {
       setCreateName("");
       setCreateDescription("");
       setCreateCategory("general");
+      setCreateMessagingType("standard");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create channel");
     } finally {
@@ -401,6 +403,16 @@ export function Chat() {
                   <option value="general">General</option>
                   <option value="development">Development</option>
                   <option value="community">Community</option>
+                </select>
+              </label>
+              <label>
+                Messaging type
+                <select
+                  value={createMessagingType}
+                  onChange={(e) => setCreateMessagingType(e.target.value as "standard" | "waku")}
+                >
+                  <option value="standard">Standard (Supabase)</option>
+                  <option value="waku">Waku / Logos</option>
                 </select>
               </label>
               <div className="modal-actions">
