@@ -43,13 +43,22 @@ export class ChannelsModule {
      * Create a new channel. Supports both standard (Supabase) and waku (Logos) messaging.
      */
     async create(data: CreateChannelData): Promise<PublicChannel> {
-        return this.http.post<PublicChannel>("/api/channels", {
+        const body: Record<string, unknown> = {
             name: data.name,
             description: data.description || "",
             emoji: data.emoji || "💬",
             category: data.category || "general",
             messagingType: data.messagingType || "standard",
-        });
+        };
+        if (data.creatorAddress) {
+            body.creatorAddress = data.creatorAddress;
+        }
+        const raw = await this.http.post<PublicChannel | { channel: PublicChannel }>("/api/channels", body);
+        // Backend returns { channel } so unwrap for consistent API
+        if (raw && typeof raw === "object" && "channel" in raw && raw.channel) {
+            return raw.channel as PublicChannel;
+        }
+        return raw as PublicChannel;
     }
 
     /**

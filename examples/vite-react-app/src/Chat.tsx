@@ -143,13 +143,23 @@ export function Chat() {
     setCreating(true);
     setError(null);
     try {
+      const session = await client.auth.getSession();
+      const userAddress =
+        session?.userAddress ??
+        (session as { session?: { userAddress?: string } })?.session?.userAddress;
+      if (!userAddress) {
+        setError("Session missing user address. Try signing out and back in.");
+        setCreating(false);
+        return;
+      }
       const channel = await client.channels.create({
         name,
         description: createDescription.trim() || undefined,
         category: createCategory || "general",
         messagingType: "standard",
+        creatorAddress: userAddress,
       });
-      await client.channels.join(channel.id);
+      await client.channels.join(channel.id, userAddress);
       await loadChannels();
       setSelectedChannel(channel);
       setShowCreateModal(false);

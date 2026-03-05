@@ -127,6 +127,8 @@ export interface CreateChannelData {
     emoji?: string;
     category?: string;
     messagingType?: MessagingType;
+    /** Optional. Backend uses session when present; pass when session may not be available (e.g. Bearer token) or to ensure creator is set. */
+    creatorAddress?: string;
 }
 
 export interface ChannelListFilters {
