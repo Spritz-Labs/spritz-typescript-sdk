@@ -1,17 +1,17 @@
-# @spritz-labs/sdk
+# @spritzlabs/sdk
 
 TypeScript SDK for building apps on [Spritz](https://spritz.chat) — censorship-resistant Web3 chat.
 
 ## Installation
 
 ```bash
-npm install @spritz-labs/sdk
+npm install @spritzlabs/sdk
 ```
 
 ## Quick Start
 
 ```typescript
-import { SpritzClient } from "@spritz-labs/sdk";
+import { SpritzClient } from "@spritzlabs/sdk";
 
 const spritz = new SpritzClient({
     apiKey: "sk_live_...", // Get your API key in app.spritz.chat under Settings
@@ -176,7 +176,7 @@ import {
     AuthError,
     NotFoundError,
     RateLimitError,
-} from "@spritz-labs/sdk";
+} from "@spritzlabs/sdk";
 
 try {
     await spritz.channels.get("nonexistent");
@@ -224,7 +224,7 @@ const spritz = new SpritzClient({
 Use the built-in constants for consistent Spritz branding in your auth UI (e.g. login screens):
 
 ```typescript
-import { SPRITZ_APP_URL, SPRITZ_BRANDING } from "@spritz-labs/sdk";
+import { SPRITZ_APP_URL, SPRITZ_BRANDING } from "@spritzlabs/sdk";
 
 // Single URL constant
 console.log(SPRITZ_APP_URL); // "https://app.spritz.chat"

@@ -1,5 +1,5 @@
 import React, { createContext, useCallback, useContext, useMemo, useState } from "react";
-import { SpritzClient } from "@spritz-labs/sdk";
+import { SpritzClient } from "@spritzlabs/sdk";
 
 const API_KEY = import.meta.env.VITE_SPRITZ_API_KEY ?? "";
 

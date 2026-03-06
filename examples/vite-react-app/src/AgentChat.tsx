@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useSpritz } from "./SpritzContext";
-import type { Agent, AgentChatStreamEvent } from "@spritz-labs/sdk";
+import type { Agent, AgentChatStreamEvent } from "@spritzlabs/sdk";
 import "./AgentChat.css";
 
 const DEFAULT_AGENT_ID = import.meta.env.VITE_SPRITZ_AGENT_ID ?? "";

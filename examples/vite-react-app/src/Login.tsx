@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { SPRITZ_BRANDING } from "@spritz-labs/sdk";
+import { SPRITZ_BRANDING } from "@spritzlabs/sdk";
 import { useSpritz } from "./SpritzContext";
 import "./Login.css";
 

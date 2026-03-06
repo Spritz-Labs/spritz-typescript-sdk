@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useSpritz } from "./SpritzContext";
-import type { PublicChannel, ChannelMessage } from "@spritz-labs/sdk";
+import type { PublicChannel, ChannelMessage } from "@spritzlabs/sdk";
 import "./Chat.css";
 
 const POLL_INTERVAL_MS = 25000; // 25s – comfortable for full-screen demo (was 5s)

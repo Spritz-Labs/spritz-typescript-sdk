@@ -1,12 +1,12 @@
 {
-    "name": "@spritz-labs/sdk",
+    "name": "@spritzlabs/sdk",
     "version": "0.1.0",
     "description": "TypeScript SDK for building apps on Spritz — censorship-resistant Web3 chat",
     "author": "Spritz Labs",
     "license": "MIT",
     "repository": {
         "type": "git",
-        "url": "https://github.com/Spritz-Labs/spritz-typescript-sdk.git"
+        "url": "git+https://github.com/Spritz-Labs/spritz-typescript-sdk.git"
     },
     "main": "./dist/index.js",
     "module": "./dist/index.mjs",
@@ -32,7 +32,8 @@
         "build": "tsup",
         "dev": "tsup --watch",
         "typecheck": "tsc --noEmit",
-        "clean": "rm -rf dist"
+        "clean": "rm -rf dist",
+        "prepublishOnly": "npm run build"
     },
     "devDependencies": {
         "tsup": "^8.0.0",
