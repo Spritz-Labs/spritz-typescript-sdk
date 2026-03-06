@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useSpritz } from "./SpritzContext";
 import type { PublicChannel, ChannelMessage } from "@spritz-labs/sdk";
 import "./Chat.css";
@@ -184,9 +184,12 @@ export function Chat() {
           <span className="chat-header-logo">Spritz</span>
           <span className="chat-header-tagline">Chat</span>
         </div>
-        <button type="button" className="btn btn-ghost" onClick={handleLogout}>
-          Sign out
-        </button>
+        <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+          <Link to="/agent-chat" className="btn btn-ghost">Agent Chat</Link>
+          <button type="button" className="btn btn-ghost" onClick={handleLogout}>
+            Sign out
+          </button>
+        </div>
       </header>
 
       <div className="chat-body">
