@@ -2,6 +2,7 @@ export { SpritzClient } from "./client";
 export { AuthModule } from "./auth";
 export { AccountModule } from "./account";
 export { ChannelsModule } from "./channels";
+export { AgentsModule } from "./agents";
 export { SPRITZ_APP_URL, SPRITZ_BRANDING } from "./branding";
 export type { SpritzBranding } from "./branding";
 
@@ -38,5 +39,15 @@ export type {
     Poll,
     PollOption,
     CreatePollData,
+    Agent,
+    AgentInfo,
+    AgentChatOptions,
+    AgentChatResponse,
+    AgentChatStreamChunk,
+    AgentChatStreamDone,
+    AgentChatStreamError,
+    AgentChatStreamEvent,
+    AgentHistoryMessage,
+    AgentHistoryResponse,
     ApiResponse,
 } from "./types";

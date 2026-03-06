@@ -150,4 +150,43 @@ export class HttpClient {
         });
         return this.handleResponse<T>(response);
     }
+
+    /**
+     * Raw POST that returns the fetch Response directly (for NDJSON streaming).
+     */
+    async rawPost(path: string, body?: unknown): Promise<Response> {
+        const url = this.buildUrl(path);
+        const response = await fetch(url, {
+            method: "POST",
+            headers: this.buildHeaders(),
+            body: body !== undefined ? JSON.stringify(body) : undefined,
+        });
+
+        if (!response.ok) {
+            let errorMessage = `HTTP ${response.status}`;
+            try {
+                const errBody = await response.json();
+                errorMessage = errBody.error || errBody.message || errorMessage;
+            } catch {
+                // Use status-based message
+            }
+
+            switch (response.status) {
+                case 400:
+                    throw new ValidationError(errorMessage);
+                case 401:
+                    throw new AuthError(errorMessage);
+                case 403:
+                    throw new ForbiddenError(errorMessage);
+                case 404:
+                    throw new NotFoundError(errorMessage);
+                case 429:
+                    throw new RateLimitError(errorMessage);
+                default:
+                    throw new SpritzError(errorMessage, response.status);
+            }
+        }
+
+        return response;
+    }
 }

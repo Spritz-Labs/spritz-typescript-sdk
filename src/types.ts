@@ -205,6 +205,104 @@ export interface CreatePollData {
     endsAt?: string;
 }
 
+// ── Agents ──
+
+export interface Agent {
+    id: string;
+    name: string;
+    personality: string | null;
+    avatar_emoji: string;
+    avatar_url: string | null;
+    visibility: string;
+    x402_enabled: boolean;
+    x402_price_cents: number;
+    x402_network: string;
+    owner_address: string;
+    tags: string[] | null;
+    suggested_questions?: string[] | null;
+    has_events?: boolean;
+    events_count?: number;
+}
+
+export interface AgentInfo {
+    agent: {
+        id: string;
+        name: string;
+        personality: string | null;
+        emoji: string;
+        tags: string[] | null;
+        features: {
+            webSearch: boolean;
+            knowledgeBase: boolean;
+        };
+        stats: {
+            totalMessages: number;
+        };
+        createdAt: string;
+    };
+    pricing: {
+        enabled: boolean;
+        pricePerMessage?: string;
+        priceCents?: number;
+        network?: string;
+        currency?: string;
+    };
+    endpoints: {
+        chat: string;
+        info: string;
+    };
+}
+
+export interface AgentChatOptions {
+    message: string;
+    sessionId?: string;
+    stream?: boolean;
+}
+
+export interface AgentChatResponse {
+    success: boolean;
+    sessionId: string;
+    message: string;
+    scheduling?: unknown;
+    agent?: {
+        id: string;
+        name: string;
+        emoji: string;
+    };
+}
+
+export interface AgentChatStreamChunk {
+    type: "chunk";
+    text: string;
+}
+
+export interface AgentChatStreamDone {
+    type: "done";
+    sessionId: string;
+    message: string;
+    scheduling?: unknown;
+}
+
+export interface AgentChatStreamError {
+    type: "error";
+    error: string;
+}
+
+export type AgentChatStreamEvent =
+    | AgentChatStreamChunk
+    | AgentChatStreamDone
+    | AgentChatStreamError;
+
+export interface AgentHistoryMessage {
+    role: "user" | "assistant";
+    content: string;
+}
+
+export interface AgentHistoryResponse {
+    messages: AgentHistoryMessage[];
+    sessionId: string;
+}
+
 // ── API Responses ──
 
 export interface ApiResponse<T = unknown> {
