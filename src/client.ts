@@ -3,6 +3,7 @@ import { HttpClient } from "./lib/http";
 import { AuthModule } from "./auth";
 import { AccountModule } from "./account";
 import { ChannelsModule } from "./channels";
+import { FriendsModule } from "./friends";
 import { AgentsModule } from "./agents";
 
 const DEFAULT_BASE_URL = "https://app.spritz.chat";
@@ -14,6 +15,7 @@ export class SpritzClient {
     public readonly auth: AuthModule;
     public readonly account: AccountModule;
     public readonly channels: ChannelsModule;
+    public readonly friends: FriendsModule;
     public readonly agents: AgentsModule;
 
     constructor(config: SpritzClientConfig) {
@@ -34,6 +36,7 @@ export class SpritzClient {
         });
         this.account = new AccountModule(this.httpClient);
         this.channels = new ChannelsModule(this.httpClient);
+        this.friends = new FriendsModule(this.httpClient);
         this.agents = new AgentsModule(this.httpClient);
     }
 

@@ -2,6 +2,7 @@ export { SpritzClient } from "./client";
 export { AuthModule } from "./auth";
 export { AccountModule } from "./account";
 export { ChannelsModule } from "./channels";
+export { FriendsModule } from "./friends";
 export { AgentsModule } from "./agents";
 export { SPRITZ_APP_URL, SPRITZ_BRANDING } from "./branding";
 export type { SpritzBranding } from "./branding";
@@ -49,5 +50,8 @@ export type {
     AgentChatStreamEvent,
     AgentHistoryMessage,
     AgentHistoryResponse,
+    Friend,
+    FriendRequest,
+    FriendRequestsResponse,
     ApiResponse,
 } from "./types";

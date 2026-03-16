@@ -303,6 +303,30 @@ export interface AgentHistoryResponse {
     sessionId: string;
 }
 
+// ── Friends ──
+
+export interface Friend {
+    id: string;
+    user_address: string;
+    friend_address: string;
+    nickname: string | null;
+    created_at: string;
+}
+
+export interface FriendRequest {
+    id: string;
+    from_address: string;
+    to_address: string;
+    status: "pending" | "accepted" | "rejected";
+    created_at: string;
+    memo?: string | null;
+}
+
+export interface FriendRequestsResponse {
+    incoming: FriendRequest[];
+    outgoing: FriendRequest[];
+}
+
 // ── API Responses ──
 
 export interface ApiResponse<T = unknown> {

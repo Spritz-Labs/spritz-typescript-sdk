@@ -68,6 +68,39 @@ const credential = await navigator.credentials.get({ publicKey: options });
 await spritz.auth.verifyPasskeyLogin(credential, options.challenge);
 ```
 
+### Using with Privy (messaging only)
+
+You can use [Privy](https://privy.io) for login and then the SDK only for messaging. After the user authenticates with Privy, use their wallet to complete Spritz’s SIWE flow and get a session:
+
+```typescript
+import { SpritzClient } from "@spritzlabs/sdk";
+import { usePrivy, useSignMessage, useWallets } from "@privy-io/react-auth";
+
+// In your app: user is already logged in via Privy
+const { user } = usePrivy();
+const { signMessage } = useSignMessage();
+const { wallets } = useWallets();
+const spritz = new SpritzClient({ apiKey: "sk_live_..." });
+
+const address = user?.wallet?.address ?? wallets[0]?.address;
+
+// 1. Get the SIWE message from Spritz
+const { message } = await spritz.auth.loginWithWallet(address);
+
+// 2. Sign with Privy (useSignMessage)
+const { signature } = await signMessage({ message }, { address });
+
+// 3. Verify with Spritz — you now have a session and can use channels/messaging
+await spritz.auth.verifyWallet(address, signature, message);
+
+// Use the SDK for messaging only
+const { channels } = await spritz.channels.list();
+await spritz.channels.join(channels[0].id);
+await spritz.channels.sendMessage(channels[0].id, { content: "Hello!" });
+```
+
+Privy handles auth and the wallet; the SDK only needs the SIWE signature to create a Spritz session, then you use `spritz.channels.*` (and optionally `spritz.account.*`) without touching Privy again.
+
 ## Account Management
 
 ```typescript
@@ -164,6 +197,30 @@ const poll = await spritz.channels.createPoll(channelId, {
 
 // Vote
 await spritz.channels.votePoll(channelId, poll.id, poll.options[0].id);
+```
+
+## Friends & Friend Requests
+
+```typescript
+// List your friends
+const { friends } = await spritz.friends.list();
+
+// List incoming and outgoing friend requests
+const { incoming, outgoing } = await spritz.friends.listRequests("all");
+
+// Send a friend request
+await spritz.friends.sendRequest("0x...", "Hi, let's connect!");
+
+// Accept or reject an incoming request
+await spritz.friends.acceptRequest(requestId);
+await spritz.friends.rejectRequest(requestId);
+
+// Cancel an outgoing request
+await spritz.friends.cancelRequest(requestId);
+
+// Remove a friend or update nickname
+await spritz.friends.removeFriend(friendId);
+await spritz.friends.updateNickname(friendId, "Alice");
 ```
 
 ## Error Handling
