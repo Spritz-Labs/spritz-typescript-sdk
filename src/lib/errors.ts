@@ -32,9 +32,13 @@ export class NotFoundError extends SpritzError {
 }
 
 export class RateLimitError extends SpritzError {
-    constructor(message: string = "Rate limit exceeded") {
+    /** Seconds to wait before retrying, from Retry-After header when present */
+    public readonly retryAfterSeconds?: number;
+
+    constructor(message: string = "Rate limit exceeded", retryAfterSeconds?: number) {
         super(message, 429, "RATE_LIMIT");
         this.name = "RateLimitError";
+        this.retryAfterSeconds = retryAfterSeconds;
     }
 }
 
@@ -43,4 +47,16 @@ export class ValidationError extends SpritzError {
         super(message, 400, "VALIDATION_ERROR");
         this.name = "ValidationError";
     }
+}
+
+/** Successful HTTP status but body was empty or not valid JSON when JSON was expected */
+export class InvalidResponseError extends SpritzError {
+    constructor(message: string = "Invalid or empty response body") {
+        super(message, 200, "INVALID_RESPONSE");
+        this.name = "InvalidResponseError";
+    }
+}
+
+export function isSpritzError(e: unknown): e is SpritzError {
+    return e instanceof SpritzError;
 }

@@ -219,4 +219,38 @@ export class ChannelsModule {
     async removeIcon(channelId: string): Promise<{ success: boolean }> {
         return this.http.delete(`/api/channels/${channelId}/icon`);
     }
+
+    // ── Pins (admin) ──
+
+    /**
+     * Pin or unpin a message in a channel (Spritz admins only).
+     */
+    async setPinned(
+        channelId: string,
+        messageId: string,
+        pin: boolean
+    ): Promise<{ success: boolean }> {
+        return this.http.post(`/api/channels/${channelId}/messages/pin`, {
+            messageId,
+            pin,
+        });
+    }
+
+    // ── Agents in channel ──
+
+    /**
+     * List AI agents attached to a channel (or pass `"global"` for Spritz Global).
+     */
+    async listAgents(channelIdOrGlobal: string): Promise<{
+        agents: Array<{
+            id: string;
+            name: string;
+            avatar_emoji: string;
+            avatar_url: string | null;
+            personality: string | null;
+            isAgent: boolean;
+        }>;
+    }> {
+        return this.http.get(`/api/channels/${channelIdOrGlobal}/agents`);
+    }
 }

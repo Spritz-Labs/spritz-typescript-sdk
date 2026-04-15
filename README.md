@@ -358,6 +358,8 @@ import {
     AuthError,
     NotFoundError,
     RateLimitError,
+    InvalidResponseError,
+    isSpritzError,
 } from "@spritzlabs/sdk";
 
 try {
@@ -368,7 +370,12 @@ try {
     } else if (error instanceof AuthError) {
         console.log("Not authenticated");
     } else if (error instanceof RateLimitError) {
-        console.log("Rate limited, try again later");
+        const wait = error.retryAfterSeconds;
+        console.log("Rate limited", wait != null ? `(retry after ${wait}s)` : "");
+    } else if (error instanceof InvalidResponseError) {
+        console.log("Unexpected response from API");
+    } else if (isSpritzError(error)) {
+        console.log("Spritz error", error.status, error.message);
     }
 }
 ```
@@ -387,6 +394,9 @@ spritz.sessionToken = savedToken;
 
 // Restore session from token
 const session = await spritz.auth.getSession();
+
+// Extend session expiry (requires an existing valid session cookie or Bearer token)
+await spritz.auth.extendSession();
 ```
 
 ## Configuration
@@ -398,7 +408,107 @@ const spritz = new SpritzClient({
     apiKey: "sk_live_...",               // Required: get it in app.spritz.chat under Settings
     baseUrl: "https://app.spritz.chat",  // Optional: defaults to production
     sessionToken: "saved-jwt-token",     // Optional: restore a previous session
+    /** Persist the session token (e.g. localStorage) — get/set called by the client */
+    sessionStorage: {
+        get: () => localStorage.getItem("spritz_session_token"),
+        set: (token) =>
+            token
+                ? localStorage.setItem("spritz_session_token", token)
+                : localStorage.removeItem("spritz_session_token"),
+    },
+    /** Optional HTTP behavior: retries on 429/503, request/response hooks, etc. */
+    http: {
+        maxRetries: 2,
+        retryBaseDelayMs: 300,
+        retryOnStatuses: [429, 503],
+        onRequest: ({ url, method }) => console.debug(method, url),
+        onResponse: ({ response }) => console.debug(response.status),
+    },
 });
+```
+
+### React
+
+For apps using React 18+, use the optional entry so you do not construct `SpritzClient` in every component:
+
+```tsx
+import { useState } from "react";
+import { SpritzProvider, useSpritzClient } from "@spritzlabs/sdk/react";
+
+function Root() {
+    const [sessionToken, setSessionToken] = useState<string | null>(null);
+    return (
+        <SpritzProvider
+            apiKey={import.meta.env.VITE_SPRITZ_API_KEY}
+            sessionToken={sessionToken}
+            sessionStorage={{
+                get: () => localStorage.getItem("spritz_session_token"),
+                set: (t) =>
+                    t
+                        ? localStorage.setItem("spritz_session_token", t)
+                        : localStorage.removeItem("spritz_session_token"),
+            }}
+        >
+            <App onSessionChange={setSessionToken} />
+        </SpritzProvider>
+    );
+}
+
+function App() {
+    const spritz = useSpritzClient();
+    return <button onClick={() => spritz.channels.list()}>List channels</button>;
+}
+```
+
+Install the same `@spritzlabs/sdk` package; `react` is a **peer dependency** when you import `@spritzlabs/sdk/react`.
+
+### Search, events, wallet, and more
+
+The client exposes additional namespaces that map to public or authenticated HTTP APIs:
+
+```typescript
+// Global search
+await spritz.search.query({ q: "ethereum", limit: 10 });
+
+// Events (list, mine, by slug)
+await spritz.events.list({ featured: true });
+await spritz.events.mine();
+await spritz.events.getBySlug("my-event");
+
+// Token-gated chats
+await spritz.tokenChats.list();
+await spritz.tokenChats.create({ /* ... */ });
+
+// Live streams
+await spritz.streams.list();
+
+// Resolve a Spritz username to profile
+await spritz.username.resolve({ username: "alice" });
+
+// Balances and transactions (authenticated)
+await spritz.wallet.balances();
+await spritz.wallet.transactions({ limit: 20 });
+
+// Leaderboard and points
+await spritz.leaderboard.get();
+await spritz.points.get();
+await spritz.points.claimDaily();
+
+// Pagination helper: repeatedly fetch pages using a time-based `before` cursor (see inbox messages)
+import { paginateByPage } from "@spritzlabs/sdk";
+for await (const batch of paginateByPage(async (before) => {
+    const { messages } = await spritz.inbox.list({ limit: 50, before });
+    return messages;
+})) {
+    console.log(batch);
+}
+```
+
+Channel helpers include pinning a message and listing agents attached to a channel:
+
+```typescript
+await spritz.channels.setPinned(channelId, messageId, true);
+const { agents } = await spritz.channels.listAgents(channelId);
 ```
 
 ## Modules
@@ -407,13 +517,21 @@ const spritz = new SpritzClient({
 |--------|--------|-------------|
 | `spritz.auth` | — | SIWE, SIWS, email, passkey authentication |
 | `spritz.account` | Authenticated | Profile, widgets, socials, themes |
-| `spritz.channels` | Authenticated | Channel CRUD, messaging, polls, reactions |
+| `spritz.channels` | Authenticated | Channel CRUD, messaging, polls, reactions, pin, agents |
 | `spritz.friends` | Authenticated | Friend list, requests, accept/reject |
 | `spritz.agents` | Public | Discover, chat, stream, history |
 | `spritz.resolve` | Public | SNS (.sol) and ENS (.spritz.eth) resolution |
 | `spritz.users` | Public | Public profile and user lookups |
 | `spritz.inbox` | Authenticated | Deferred messages to any name/address |
 | `spritz.developer` | Authenticated | API key management |
+| `spritz.search` | Varies | Global search |
+| `spritz.events` | Varies | Events list, mine, by slug |
+| `spritz.tokenChats` | Varies | Token-gated chats |
+| `spritz.streams` | Varies | Streams |
+| `spritz.username` | Public | Username resolve |
+| `spritz.wallet` | Authenticated | Balances and transactions |
+| `spritz.leaderboard` | Public | Leaderboard |
+| `spritz.points` | Authenticated | Points and daily claim |
 
 ## Branding
 

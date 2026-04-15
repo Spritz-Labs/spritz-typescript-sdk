@@ -21,6 +21,16 @@
                 "types": "./dist/index.d.ts",
                 "default": "./dist/index.js"
             }
+        },
+        "./react": {
+            "import": {
+                "types": "./dist/react/index.d.mts",
+                "default": "./dist/react/index.mjs"
+            },
+            "require": {
+                "types": "./dist/react/index.d.ts",
+                "default": "./dist/react/index.js"
+            }
         }
     },
     "files": [
@@ -32,12 +42,24 @@
         "build": "tsup",
         "dev": "tsup --watch",
         "typecheck": "tsc --noEmit",
+        "test": "vitest run",
         "clean": "rm -rf dist",
         "prepublishOnly": "npm run build"
     },
+    "peerDependencies": {
+        "react": ">=18"
+    },
+    "peerDependenciesMeta": {
+        "react": {
+            "optional": true
+        }
+    },
     "devDependencies": {
+        "@types/react": "^18.3.0",
+        "react": "^18.3.0",
         "tsup": "^8.0.0",
-        "typescript": "^5.4.0"
+        "typescript": "^5.4.0",
+        "vitest": "^2.1.0"
     },
     "engines": {
         "node": ">=18.0.0"

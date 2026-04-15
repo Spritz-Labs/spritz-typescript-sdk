@@ -208,6 +208,23 @@ export class AuthModule {
     }
 
     /**
+     * Extend the current session and receive a fresh Bearer token.
+     * Requires an existing valid session. Used automatically by the HTTP client on 401 when configured.
+     */
+    async extendSession(): Promise<boolean> {
+        const res = await this.http.post<{
+            sessionToken?: string;
+            success?: boolean;
+            extended?: boolean;
+        }>("/api/auth/session", {});
+        if (res.sessionToken) {
+            this.setToken(res.sessionToken);
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * Log out and clear the session token.
      */
     async logout(): Promise<void> {

@@ -1,9 +1,32 @@
 // ── Client Configuration ──
 
+/** Optional persistence for the Bearer session token (e.g. browser localStorage or a server-side store). */
+export interface SessionStorageAdapter {
+    get: () => string | null;
+    set: (token: string | null) => void;
+}
+
+export interface SpritzHttpOptions {
+    /** Retries for 429/503 (default 2) */
+    maxRetries?: number;
+    retryBaseDelayMs?: number;
+    retryOnStatuses?: number[];
+    onRequest?: (info: {
+        url: string;
+        method: string;
+        headers: Record<string, string>;
+    }) => void;
+    onResponse?: (info: { url: string; response: Response }) => void;
+    fetchImpl?: typeof fetch;
+}
+
 export interface SpritzClientConfig {
     apiKey: string;
     baseUrl?: string;
+    /** Initial session; overridden by sessionStorage.get() when sessionStorage is set */
     sessionToken?: string;
+    sessionStorage?: SessionStorageAdapter;
+    http?: SpritzHttpOptions;
 }
 
 // ── Auth ──
@@ -433,6 +456,50 @@ export interface InboxListOptions {
     limit?: number;
     before?: string;
 }
+
+// ── Search ──
+
+export interface SearchResult {
+    type: "channel_message" | "dm" | "group";
+    id: string;
+    content: string;
+    sender_address: string;
+    sender_name?: string;
+    created_at: string;
+    channel_id?: string;
+    channel_name?: string;
+    channel_emoji?: string;
+    peer_address?: string;
+    peer_name?: string;
+    group_id?: string;
+    group_name?: string;
+    highlight?: string;
+}
+
+// ── Webhooks (future / integration contracts) ──
+
+export type SpritzWebhookEvent =
+    | {
+          type: "inbox.message_received";
+          id: string;
+          recipientAddress: string;
+          senderAddress: string;
+          createdAt: string;
+      }
+    | {
+          type: "channel.message_created";
+          channelId: string;
+          messageId: string;
+          senderAddress: string;
+          createdAt: string;
+      }
+    | {
+          type: "friend.request_received";
+          requestId: string;
+          fromAddress: string;
+          toAddress: string;
+          createdAt: string;
+      };
 
 // ── API Responses ──
 
