@@ -22,6 +22,12 @@ export interface SiweChallenge {
     nonce: string;
 }
 
+/** SIWS (Sign-In with Solana) challenge — same shape as SiweChallenge. */
+export type SiwsChallenge = SiweChallenge;
+
+/** Generic challenge type covering both EVM and Solana sign-in flows. */
+export type SignInChallenge = SiweChallenge;
+
 export interface PasskeyOptions {
     challenge: string;
     rpId: string;
@@ -325,6 +331,107 @@ export interface FriendRequest {
 export interface FriendRequestsResponse {
     incoming: FriendRequest[];
     outgoing: FriendRequest[];
+}
+
+// ── Name Resolution ──
+
+export interface SnsForwardResult {
+    kind: "forward";
+    name: string;
+    address: string;
+}
+
+export interface SnsReverseResult {
+    kind: "reverse";
+    address: string;
+    name: string | null;
+}
+
+export interface EnsResolveResult {
+    found: boolean;
+    name: string;
+    username?: string;
+    claimed?: boolean;
+    eligible?: boolean;
+    reason?: string;
+    resolveAddress?: string | null;
+    walletType?: string;
+    displayName?: string;
+    avatarUrl?: string;
+    enabled?: boolean;
+}
+
+// ── Public Users ──
+
+export interface PublicUserProfile {
+    user: {
+        address: string;
+        displayName?: string;
+        username?: string;
+        ensName?: string;
+        avatarUrl?: string;
+        bio?: string;
+        chain?: string;
+    } | null;
+    socials?: Array<{ platform: string; handle: string; url?: string }>;
+    agents?: Array<{ id: string; name: string; personality: string | null; avatar_emoji: string; avatar_url: string | null; visibility: string }>;
+    scheduling?: Record<string, unknown> | null;
+}
+
+export interface PublicUserLookup {
+    user: {
+        username?: string;
+        display_name?: string;
+        ens_name?: string;
+        avatar_url?: string;
+    } | null;
+}
+
+// ── Developer Keys ──
+
+export interface DeveloperKey {
+    id: string;
+    name: string | null;
+    api_key_preview: string;
+    scopes: string[];
+    status: string;
+    created_at: string;
+    approved_at?: string | null;
+    revoked_at?: string | null;
+}
+
+export interface CreateKeyResponse {
+    key: DeveloperKey & { api_key: string };
+    warning?: string;
+}
+
+// ── Inbox (Deferred Messages) ──
+
+export interface InboxSendOptions {
+    messageType?: string;
+    metadata?: Record<string, unknown>;
+    expiresInDays?: number;
+}
+
+export interface InboxMessage {
+    id: string;
+    sender_address: string;
+    sender_display_name?: string;
+    recipient_identifier: string;
+    recipient_address?: string | null;
+    content: string;
+    message_type: string;
+    metadata?: Record<string, unknown> | null;
+    claimed: boolean;
+    claimed_at?: string | null;
+    created_at: string;
+    expires_at?: string | null;
+}
+
+export interface InboxListOptions {
+    status?: "unclaimed" | "claimed" | "all";
+    limit?: number;
+    before?: string;
 }
 
 // ── API Responses ──

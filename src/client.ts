@@ -5,6 +5,10 @@ import { AccountModule } from "./account";
 import { ChannelsModule } from "./channels";
 import { FriendsModule } from "./friends";
 import { AgentsModule } from "./agents";
+import { ResolveModule } from "./resolve";
+import { UsersModule } from "./users";
+import { DeveloperModule } from "./developer";
+import { InboxModule } from "./inbox";
 
 const DEFAULT_BASE_URL = "https://app.spritz.chat";
 
@@ -17,6 +21,10 @@ export class SpritzClient {
     public readonly channels: ChannelsModule;
     public readonly friends: FriendsModule;
     public readonly agents: AgentsModule;
+    public readonly resolve: ResolveModule;
+    public readonly users: UsersModule;
+    public readonly developer: DeveloperModule;
+    public readonly inbox: InboxModule;
 
     constructor(config: SpritzClientConfig) {
         if (!config.apiKey) {
@@ -38,6 +46,10 @@ export class SpritzClient {
         this.channels = new ChannelsModule(this.httpClient);
         this.friends = new FriendsModule(this.httpClient);
         this.agents = new AgentsModule(this.httpClient);
+        this.resolve = new ResolveModule(this.httpClient);
+        this.users = new UsersModule(this.httpClient);
+        this.developer = new DeveloperModule(this.httpClient);
+        this.inbox = new InboxModule(this.httpClient);
     }
 
     get sessionToken(): string | null {

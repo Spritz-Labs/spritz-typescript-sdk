@@ -33,9 +33,9 @@ await spritz.channels.sendMessage(channels[0].id, {
 
 ## Authentication
 
-The SDK supports three authentication methods: wallet (SIWE), email, and passkey.
+The SDK supports four authentication methods: wallet (SIWE), Solana (SIWS), email, and passkey.
 
-### Wallet (SIWE)
+### Wallet (SIWE — Ethereum)
 
 ```typescript
 // 1. Get the SIWE challenge
@@ -46,6 +46,23 @@ const signature = await wallet.signMessage(message);
 
 // 3. Verify the signature
 await spritz.auth.verifyWallet("0x...", signature, message);
+```
+
+### Wallet (SIWS — Solana)
+
+```typescript
+// 1. Get the SIWS challenge
+const { message, nonce } = await spritz.auth.loginWithSolana("base58Address...");
+
+// 2. Sign the message with the user's Solana wallet
+const signatureBytes = nacl.sign.detached(
+    new TextEncoder().encode(message),
+    keypair.secretKey
+);
+const signature = bs58.encode(signatureBytes);
+
+// 3. Verify the signature — session is established automatically
+await spritz.auth.verifySolana("base58Address...", signature, message);
 ```
 
 ### Email
@@ -70,7 +87,7 @@ await spritz.auth.verifyPasskeyLogin(credential, options.challenge);
 
 ### Using with Privy (messaging only)
 
-You can use [Privy](https://privy.io) for login and then the SDK only for messaging. After the user authenticates with Privy, use their wallet to complete Spritz’s SIWE flow and get a session:
+You can use [Privy](https://privy.io) for login and then the SDK only for messaging. After the user authenticates with Privy, use their wallet to complete Spritz's SIWE flow and get a session:
 
 ```typescript
 import { SpritzClient } from "@spritzlabs/sdk";
@@ -124,6 +141,39 @@ await spritz.account.addWidget({
     type: "social_link",
     config: { platform: "twitter", handle: "@alice", url: "https://x.com/alice" },
 });
+```
+
+## Name Resolution
+
+Resolve SNS (.sol) and ENS (spritz.eth) names without needing direct RPC access.
+
+```typescript
+// SNS: Resolve a .sol domain to a Solana wallet
+const { address } = await spritz.resolve.snsForward("alice.sol");
+
+// SNS: Reverse-resolve a wallet to its primary .sol name
+const { name } = await spritz.resolve.snsReverse("base58Address...");
+
+// ENS: Resolve a spritz.eth subname
+const result = await spritz.resolve.ensResolve("alice.spritz.eth");
+
+// Convenience: resolve any identifier to a wallet address
+const wallet = await spritz.resolve.resolveToAddress("alice.sol");
+```
+
+## Public User Lookup
+
+Look up any user's public profile without authentication — useful for rendering user cards, social previews, or verifying identities.
+
+```typescript
+// Full profile with socials, agents, and scheduling info
+const profile = await spritz.users.getProfile("0x...");
+// or by username/ENS:
+const profile2 = await spritz.users.getProfile("alice");
+
+// Lightweight lookup (just display info)
+const { user } = await spritz.users.lookup("0x...");
+console.log(user?.username, user?.avatar_url);
 ```
 
 ## Channels
@@ -199,14 +249,14 @@ const poll = await spritz.channels.createPoll(channelId, {
 await spritz.channels.votePoll(channelId, poll.id, poll.options[0].id);
 ```
 
-## Friends & Friend Requests
+## Friends
 
 ```typescript
 // List your friends
-const { friends } = await spritz.friends.list();
+const friends = await spritz.friends.list();
 
-// List incoming and outgoing friend requests
-const { incoming, outgoing } = await spritz.friends.listRequests("all");
+// Get friend requests
+const { incoming, outgoing } = await spritz.friends.getRequests("all");
 
 // Send a friend request
 await spritz.friends.sendRequest("0x...", "Hi, let's connect!");
@@ -218,9 +268,84 @@ await spritz.friends.rejectRequest(requestId);
 // Cancel an outgoing request
 await spritz.friends.cancelRequest(requestId);
 
-// Remove a friend or update nickname
-await spritz.friends.removeFriend(friendId);
-await spritz.friends.updateNickname(friendId, "Alice");
+// Remove a friend
+await spritz.friends.remove(friendId);
+```
+
+## Agents
+
+```typescript
+// Discover public agents
+const { agents } = await spritz.agents.discover(myAddress, {
+    filter: "public",
+    search: "weather",
+});
+
+// Get agent info and pricing
+const info = await spritz.agents.getInfo(agentId);
+console.log(info.pricing); // { enabled: true, pricePerMessage: "$0.01", ... }
+
+// Chat with an agent
+const response = await spritz.agents.chat(agentId, {
+    message: "What's the weather in NYC?",
+    sessionId: "my-session",
+});
+
+// Stream a response
+for await (const event of spritz.agents.chatStream(agentId, { message: "Tell me a story" })) {
+    if (event.type === "chunk") process.stdout.write(event.text);
+    if (event.type === "done") console.log("\n\nSession:", event.sessionId);
+}
+
+// Get chat history
+const history = await spritz.agents.getHistory(agentId, sessionId);
+```
+
+## Inbox (Deferred Messages)
+
+Send messages to any wallet or name service identifier — even if the recipient hasn't signed up for Spritz yet. Messages are stored and delivered when the recipient eventually logs in.
+
+This is ideal for use cases like SNS-to-SNS messaging, community onboarding, or cross-chain social outreach.
+
+```typescript
+// Send a message to an SNS name (recipient doesn't need to be on Spritz)
+const msg = await spritz.inbox.send("alice.sol", "Hey Alice! Saw your project on Solana.");
+
+// Send with metadata and custom expiry
+await spritz.inbox.send("vitalik.eth", "Check out this NFT", {
+    messageType: "link",
+    metadata: { url: "https://example.com/nft/123", title: "Cool NFT" },
+    expiresInDays: 30,
+});
+
+// Check for pending messages (as recipient)
+const { unclaimed } = await spritz.inbox.count();
+console.log(`You have ${unclaimed} new messages`);
+
+// List inbox messages
+const { messages } = await spritz.inbox.list({ status: "unclaimed" });
+
+// Claim (acknowledge) messages
+await spritz.inbox.claim(messages.map(m => m.id));
+
+// Or claim all at once
+await spritz.inbox.claim();
+```
+
+## Developer Keys
+
+Manage API keys programmatically.
+
+```typescript
+// List your API keys
+const keys = await spritz.developer.listKeys();
+
+// Create a new key (full key is only shown once!)
+const { key, warning } = await spritz.developer.createKey("My App", ["read", "write"]);
+console.log(key.api_key); // sk_live_... — save this!
+
+// Revoke a key
+await spritz.developer.revokeKey(keyId);
 ```
 
 ## Error Handling
@@ -275,6 +400,20 @@ const spritz = new SpritzClient({
     sessionToken: "saved-jwt-token",     // Optional: restore a previous session
 });
 ```
+
+## Modules
+
+| Module | Access | Description |
+|--------|--------|-------------|
+| `spritz.auth` | — | SIWE, SIWS, email, passkey authentication |
+| `spritz.account` | Authenticated | Profile, widgets, socials, themes |
+| `spritz.channels` | Authenticated | Channel CRUD, messaging, polls, reactions |
+| `spritz.friends` | Authenticated | Friend list, requests, accept/reject |
+| `spritz.agents` | Public | Discover, chat, stream, history |
+| `spritz.resolve` | Public | SNS (.sol) and ENS (.spritz.eth) resolution |
+| `spritz.users` | Public | Public profile and user lookups |
+| `spritz.inbox` | Authenticated | Deferred messages to any name/address |
+| `spritz.developer` | Authenticated | API key management |
 
 ## Branding
 

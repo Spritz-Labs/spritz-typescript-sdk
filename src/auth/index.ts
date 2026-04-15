@@ -2,6 +2,7 @@ import type { HttpClient } from "../lib/http";
 import type {
     SessionPayload,
     SiweChallenge,
+    SiwsChallenge,
     PasskeyOptions,
     PasskeyCredential,
 } from "../types";
@@ -80,6 +81,35 @@ export class AuthModule {
             { address, userAddress: address, user_address: address },
             this.walletAddressHeaders(address)
         );
+        if (res.sessionToken) {
+            this.setToken(res.sessionToken);
+        }
+        return res;
+    }
+
+    // ── Solana (SIWS) ──
+
+    /**
+     * Request a SIWS challenge message for the given Solana address.
+     * Sign the returned message with the wallet's private key, then call verifySolana().
+     */
+    async loginWithSolana(address: string): Promise<SiwsChallenge> {
+        return this.http.get<SiwsChallenge>("/api/auth/verify-solana", { address });
+    }
+
+    /**
+     * Verify a signed SIWS message and establish a session.
+     */
+    async verifySolana(
+        address: string,
+        signature: string,
+        message: string
+    ): Promise<AuthResponse> {
+        const res = await this.http.post<AuthResponse>("/api/auth/verify-solana", {
+            address,
+            signature,
+            message,
+        });
         if (res.sessionToken) {
             this.setToken(res.sessionToken);
         }

@@ -15,37 +15,50 @@ export class AgentsModule {
         this.http = http;
     }
 
+    // ── Discovery ──
+
     /**
-     * Get public agent details (name, personality, avatar, tags, suggested questions, etc.).
+     * List the authenticated user's own agents.
+     */
+    async list(userAddress: string): Promise<Agent[]> {
+        const res = await this.http.get<{ agents: Agent[] }>("/api/agents", { userAddress });
+        return res.agents ?? [];
+    }
+
+    /**
+     * Discover public, friends', and official agents.
+     */
+    async discover(
+        userAddress: string,
+        options?: { filter?: "all" | "public" | "friends" | "official"; search?: string; limit?: number }
+    ): Promise<{ agents: Agent[]; total: number }> {
+        const params: Record<string, string | number> = { userAddress };
+        if (options?.filter) params.filter = options.filter;
+        if (options?.search) params.search = options.search;
+        if (options?.limit) params.limit = options.limit;
+        return this.http.get("/api/agents/discover", params);
+    }
+
+    // ── Public Agent Endpoints (no auth required) ──
+
+    /**
+     * Get public info for an agent by ID.
      */
     async get(agentId: string): Promise<Agent> {
         return this.http.get<Agent>(`/api/public/agents/${agentId}`);
     }
 
     /**
-     * Get agent info including pricing and feature flags.
+     * Get agent info including pricing and endpoints.
      */
     async getInfo(agentId: string): Promise<AgentInfo> {
         return this.http.get<AgentInfo>(`/api/public/agents/${agentId}/chat`);
     }
 
     /**
-     * Send a message to an agent and get a complete response (non-streaming).
-     *
-     * @example
-     * ```ts
-     * const reply = await client.agents.chat("agent-id", {
-     *   message: "Hello!",
-     * });
-     * console.log(reply.message);
-     * // Continue the conversation using the returned sessionId
-     * const followUp = await client.agents.chat("agent-id", {
-     *   message: "Tell me more",
-     *   sessionId: reply.sessionId,
-     * });
-     * ```
+     * Send a chat message to a public agent (non-streaming).
      */
-    async chat(agentId: string, options: Omit<AgentChatOptions, "stream">): Promise<AgentChatResponse> {
+    async chat(agentId: string, options: AgentChatOptions): Promise<AgentChatResponse> {
         return this.http.post<AgentChatResponse>(`/api/public/agents/${agentId}/chat`, {
             message: options.message,
             sessionId: options.sessionId,
@@ -54,22 +67,8 @@ export class AgentsModule {
     }
 
     /**
-     * Send a message to an agent and receive a streaming response.
-     * Returns an async iterable of NDJSON events.
-     *
-     * Event types:
-     *  - `{ type: "chunk", text: "..." }` — incremental text
-     *  - `{ type: "done", sessionId, message }` — final complete message
-     *  - `{ type: "error", error: "..." }` — an error occurred
-     *
-     * @example
-     * ```ts
-     * for await (const event of client.agents.chatStream("agent-id", { message: "Hello!" })) {
-     *   if (event.type === "chunk") process.stdout.write(event.text);
-     *   if (event.type === "done") console.log("\nSession:", event.sessionId);
-     *   if (event.type === "error") console.error(event.error);
-     * }
-     * ```
+     * Stream a chat response from a public agent via NDJSON.
+     * Yields AgentChatStreamEvent objects as they arrive.
      */
     async *chatStream(
         agentId: string,
@@ -81,12 +80,9 @@ export class AgentsModule {
             stream: true,
         });
 
-        const body = response.body;
-        if (!body) {
-            throw new Error("No response body for streaming chat");
-        }
+        const reader = response.body?.getReader();
+        if (!reader) return;
 
-        const reader = body.getReader();
         const decoder = new TextDecoder();
         let buffer = "";
 
@@ -105,7 +101,7 @@ export class AgentsModule {
                     try {
                         yield JSON.parse(trimmed) as AgentChatStreamEvent;
                     } catch {
-                        // Skip malformed lines
+                        // skip malformed lines
                     }
                 }
             }
@@ -114,7 +110,7 @@ export class AgentsModule {
                 try {
                     yield JSON.parse(buffer.trim()) as AgentChatStreamEvent;
                 } catch {
-                    // Skip malformed trailing data
+                    // skip
                 }
             }
         } finally {
@@ -123,12 +119,11 @@ export class AgentsModule {
     }
 
     /**
-     * Get chat history for a specific session.
+     * Get chat history for a session.
      */
     async getHistory(agentId: string, sessionId: string): Promise<AgentHistoryResponse> {
-        return this.http.get<AgentHistoryResponse>(
-            `/api/public/agents/${agentId}/history`,
-            { sessionId }
-        );
+        return this.http.get<AgentHistoryResponse>(`/api/public/agents/${agentId}/history`, {
+            sessionId,
+        });
     }
 }

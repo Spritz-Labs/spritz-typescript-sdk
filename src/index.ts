@@ -4,6 +4,10 @@ export { AccountModule } from "./account";
 export { ChannelsModule } from "./channels";
 export { FriendsModule } from "./friends";
 export { AgentsModule } from "./agents";
+export { ResolveModule } from "./resolve";
+export { UsersModule } from "./users";
+export { DeveloperModule } from "./developer";
+export { InboxModule } from "./inbox";
 export { SPRITZ_APP_URL, SPRITZ_BRANDING } from "./branding";
 export type { SpritzBranding } from "./branding";
 
@@ -21,6 +25,8 @@ export type {
     AuthMethod,
     SessionPayload,
     SiweChallenge,
+    SiwsChallenge,
+    SignInChallenge,
     PasskeyOptions,
     PasskeyCredential,
     UserProfile,
@@ -53,5 +59,15 @@ export type {
     Friend,
     FriendRequest,
     FriendRequestsResponse,
+    SnsForwardResult,
+    SnsReverseResult,
+    EnsResolveResult,
+    PublicUserProfile,
+    PublicUserLookup,
+    DeveloperKey,
+    CreateKeyResponse,
+    InboxSendOptions,
+    InboxMessage,
+    InboxListOptions,
     ApiResponse,
 } from "./types";

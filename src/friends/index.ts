@@ -9,59 +9,60 @@ export class FriendsModule {
     }
 
     /**
-     * List the authenticated user's friends.
+     * List all friends for the authenticated user.
      */
-    async list(): Promise<{ friends: Friend[] }> {
-        return this.http.get("/api/friends");
+    async list(): Promise<Friend[]> {
+        const res = await this.http.get<{ friends: Friend[] }>("/api/friends");
+        return res.friends ?? [];
     }
 
     /**
-     * List incoming and/or outgoing friend requests.
-     * @param type - "incoming" | "outgoing" | "all" (default "all")
+     * Get incoming and outgoing friend requests.
+     * @param type - Filter by "incoming", "outgoing", or "all" (default).
      */
-    async listRequests(type: "incoming" | "outgoing" | "all" = "all"): Promise<FriendRequestsResponse> {
-        return this.http.get("/api/friend-requests", { type });
+    async getRequests(type?: "incoming" | "outgoing" | "all"): Promise<FriendRequestsResponse> {
+        const params: Record<string, string> = {};
+        if (type) params.type = type;
+        return this.http.get<FriendRequestsResponse>("/api/friend-requests", params);
     }
 
     /**
-     * Send a friend request to an address.
+     * Send a friend request to the given address.
+     * @param toAddress - Wallet address (EVM or Solana) of the recipient.
+     * @param memo - Optional short message (max 100 chars).
      */
-    async sendRequest(toAddress: string, memo?: string): Promise<{ request: FriendRequest }> {
-        return this.http.post("/api/friend-requests", { toAddress, memo });
+    async sendRequest(toAddress: string, memo?: string): Promise<FriendRequest> {
+        const body: Record<string, string> = { toAddress };
+        if (memo) body.memo = memo;
+        const res = await this.http.post<{ request: FriendRequest }>("/api/friend-requests", body);
+        return res.request;
     }
 
     /**
-     * Accept an incoming friend request by id.
+     * Accept a pending friend request by ID.
      */
     async acceptRequest(requestId: string): Promise<{ success: boolean }> {
         return this.http.post(`/api/friend-requests/${requestId}/accept`);
     }
 
     /**
-     * Reject an incoming friend request by id.
+     * Reject a pending friend request by ID.
      */
     async rejectRequest(requestId: string): Promise<{ success: boolean }> {
         return this.http.post(`/api/friend-requests/${requestId}/reject`);
     }
 
     /**
-     * Cancel an outgoing friend request by id.
+     * Cancel an outgoing friend request by ID.
      */
     async cancelRequest(requestId: string): Promise<{ success: boolean }> {
         return this.http.delete(`/api/friend-requests/${requestId}`);
     }
 
     /**
-     * Remove a friend by friend record id.
+     * Remove a friend by their friend record ID.
      */
-    async removeFriend(friendId: string): Promise<{ success: boolean }> {
+    async remove(friendId: string): Promise<{ success: boolean }> {
         return this.http.delete(`/api/friends/${friendId}`);
-    }
-
-    /**
-     * Update a friend's nickname by friend record id.
-     */
-    async updateNickname(friendId: string, nickname: string): Promise<{ success: boolean }> {
-        return this.http.patch(`/api/friends/${friendId}`, { nickname });
     }
 }
