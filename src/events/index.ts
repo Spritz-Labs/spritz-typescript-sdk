@@ -1,17 +1,15 @@
 import type { HttpClient } from "../lib/http";
 
-export interface PublicEventsListOptions {
-    type?: string;
-    city?: string;
-    country?: string;
-    blockchain?: string;
-    featured?: boolean;
-    search?: string;
-    from?: string;
-    to?: string;
-    upcoming?: boolean;
-    limit?: number;
-    offset?: number;
+export interface SpritzEvent {
+    id: string;
+    title: string;
+    description?: string;
+    start_at: string;
+    end_at?: string;
+    location?: string;
+    creator_address: string;
+    created_at: string;
+    rsvp_count?: number;
 }
 
 export class EventsModule {
@@ -21,46 +19,26 @@ export class EventsModule {
         this.http = http;
     }
 
-    /**
-     * List published public events (no auth).
-     */
-    async list(options?: PublicEventsListOptions): Promise<{
-        events: Record<string, unknown>[];
-        total: number;
-        limit: number;
-        offset: number;
-        filters: {
-            eventTypes: string[];
-            cities: string[];
-            countries: string[];
-            blockchains: string[];
-        };
-    }> {
+    async list(opts?: { upcoming?: boolean; limit?: number }): Promise<{ events: SpritzEvent[] }> {
         const params: Record<string, string | number | boolean> = {};
-        if (options?.type) params.type = options.type;
-        if (options?.city) params.city = options.city;
-        if (options?.country) params.country = options.country;
-        if (options?.blockchain) params.blockchain = options.blockchain;
-        if (options?.featured === true) params.featured = "true";
-        if (options?.search) params.search = options.search;
-        if (options?.from) params.from = options.from;
-        if (options?.to) params.to = options.to;
-        if (options?.upcoming !== undefined) params.upcoming = options.upcoming;
-        if (options?.limit) params.limit = options.limit;
-        if (options?.offset !== undefined) params.offset = options.offset;
+        if (opts?.upcoming !== undefined) params.upcoming = opts.upcoming;
+        if (opts?.limit) params.limit = opts.limit;
         return this.http.get("/api/events", params);
     }
 
-    /** Events created by the authenticated user */
-    async listMine(): Promise<{ events: Record<string, unknown>[] }> {
-        return this.http.get("/api/events/mine");
+    async get(eventId: string): Promise<SpritzEvent> {
+        return this.http.get<SpritzEvent>(`/api/events/${eventId}`);
     }
 
-    /** Single published event by URL slug */
-    async getBySlug(slug: string): Promise<{
-        event: Record<string, unknown>;
-        isRegistered: boolean;
-    }> {
-        return this.http.get(`/api/events/by-slug/${encodeURIComponent(slug)}`);
+    async create(data: Omit<SpritzEvent, "id" | "created_at" | "creator_address" | "rsvp_count">): Promise<SpritzEvent> {
+        return this.http.post<SpritzEvent>("/api/events", data);
+    }
+
+    async rsvp(eventId: string): Promise<{ success: boolean }> {
+        return this.http.post(`/api/events/${eventId}/rsvp`);
+    }
+
+    async cancelRsvp(eventId: string): Promise<{ success: boolean }> {
+        return this.http.delete(`/api/events/${eventId}/rsvp`);
     }
 }

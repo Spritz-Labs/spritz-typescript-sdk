@@ -1,14 +1,6 @@
 import type { HttpClient } from "../lib/http";
 import type { SearchResult } from "../types";
 
-export interface SearchOptions {
-    q: string;
-    type?: "all" | "channels" | "dms" | "groups" | "alpha";
-    limit?: number;
-    /** Required when not using a session; must match the searching user's wallet */
-    userAddress?: string;
-}
-
 export class SearchModule {
     private http: HttpClient;
 
@@ -16,19 +8,14 @@ export class SearchModule {
         this.http = http;
     }
 
-    /**
-     * Full-text search across joined channel messages and Spritz Global (alpha).
-     * Requires authentication or `userAddress` query param.
-     */
-    async query(options: SearchOptions): Promise<{
-        results: SearchResult[];
-        total: number;
-        query: string;
-    }> {
-        const params: Record<string, string | number> = { q: options.q };
-        if (options.type) params.type = options.type;
-        if (options.limit) params.limit = options.limit;
-        if (options.userAddress) params.userAddress = options.userAddress;
+    async query(
+        q: string,
+        opts?: { types?: string[]; limit?: number; offset?: number },
+    ): Promise<{ results: SearchResult[]; total: number }> {
+        const params: Record<string, string | number> = { q };
+        if (opts?.types?.length) params.types = opts.types.join(",");
+        if (opts?.limit) params.limit = opts.limit;
+        if (opts?.offset) params.offset = opts.offset;
         return this.http.get("/api/search", params);
     }
 }

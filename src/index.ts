@@ -1,4 +1,12 @@
+// ── Core ──
 export { SpritzClient } from "./client";
+export { HttpClient } from "./lib/http";
+export type { HttpClientConfig, HttpRequestHook, HttpResponseHook } from "./lib/http";
+export { paginateByPage } from "./lib/paginate";
+export { SPRITZ_APP_URL, SPRITZ_BRANDING } from "./branding";
+export type { SpritzBranding } from "./branding";
+
+// ── Modules ──
 export { AuthModule } from "./auth";
 export { AccountModule } from "./account";
 export { ChannelsModule } from "./channels";
@@ -16,12 +24,9 @@ export { UsernameModule } from "./username";
 export { WalletModule } from "./wallet";
 export { LeaderboardModule } from "./leaderboard";
 export { PointsModule } from "./points";
-export { HttpClient } from "./lib/http";
-export type { HttpClientConfig, HttpRequestHook, HttpResponseHook } from "./lib/http";
-export { paginateByPage } from "./lib/paginate";
-export { SPRITZ_APP_URL, SPRITZ_BRANDING } from "./branding";
-export type { SpritzBranding } from "./branding";
+export { SchedulingModule, PLATFORM_FEE_BPS, calculatePlatformFee } from "./scheduling";
 
+// ── Errors ──
 export {
     SpritzError,
     AuthError,
@@ -33,6 +38,7 @@ export {
     isSpritzError,
 } from "./lib/errors";
 
+// ── Types ──
 export type {
     SpritzClientConfig,
     SessionStorageAdapter,
@@ -88,3 +94,11 @@ export type {
     SpritzWebhookEvent,
     ApiResponse,
 } from "./types";
+
+export type {
+    SchedulingSettings,
+    ScheduledCall,
+    AvailabilitySlot,
+    BookCallData,
+    CreateShareableLinkData,
+} from "./scheduling";

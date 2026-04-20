@@ -1,28 +1,14 @@
 import type { HttpClient } from "../lib/http";
 
-export interface CreateTokenChatBody {
-    userAddress: string;
-    tokenAddress: string;
-    tokenChainId: number;
-    tokenName?: string;
-    tokenSymbol?: string;
-    tokenDecimals?: number;
-    tokenImage?: string;
-    minBalance?: string;
-    minBalanceDisplay?: string;
-    isOfficial?: boolean;
+export interface TokenChat {
+    id: string;
+    token_address: string;
+    chain_id: number;
     name: string;
-    description?: string;
-    emoji?: string;
-    messagingType?: "standard" | "waku";
-}
-
-export interface TokenChatsListOptions {
-    userAddress?: string;
-    tokenAddress?: string;
-    chainId?: number;
-    search?: string;
-    mode?: "browse" | "my";
+    symbol: string;
+    member_count: number;
+    message_count: number;
+    created_at: string;
 }
 
 export class TokenChatsModule {
@@ -32,22 +18,22 @@ export class TokenChatsModule {
         this.http = http;
     }
 
-    async list(options?: TokenChatsListOptions): Promise<{ chats: Record<string, unknown>[] }> {
-        const params: Record<string, string> = {};
-        if (options?.userAddress) params.userAddress = options.userAddress;
-        if (options?.tokenAddress) params.tokenAddress = options.tokenAddress;
-        if (options?.chainId !== undefined) params.chainId = String(options.chainId);
-        if (options?.search) params.search = options.search;
-        if (options?.mode) params.mode = options.mode;
-        return this.http.get("/api/token-chats", params);
+    async list(): Promise<{ chats: TokenChat[] }> {
+        return this.http.get("/api/token-chats");
     }
 
-    async create(body: CreateTokenChatBody): Promise<{ chat: Record<string, unknown> }> {
-        return this.http.post("/api/token-chats", body);
+    async get(chatId: string): Promise<TokenChat> {
+        return this.http.get<TokenChat>(`/api/token-chats/${chatId}`);
     }
 
-    /** Public metadata for a token chat */
-    async get(id: string): Promise<Record<string, unknown>> {
-        return this.http.get(`/api/public/token-chats/${id}`);
+    async getMessages(chatId: string, opts?: { limit?: number; before?: string }): Promise<{ messages: unknown[] }> {
+        const params: Record<string, string | number> = {};
+        if (opts?.limit) params.limit = opts.limit;
+        if (opts?.before) params.before = opts.before;
+        return this.http.get(`/api/token-chats/${chatId}/messages`, params);
+    }
+
+    async sendMessage(chatId: string, content: string): Promise<{ success: boolean }> {
+        return this.http.post(`/api/token-chats/${chatId}/messages`, { content });
     }
 }

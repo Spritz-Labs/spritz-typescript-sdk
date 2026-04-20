@@ -1,29 +1,22 @@
 /**
- * Async iterator that repeatedly calls `fetchPage` until no more results.
- * Stops when the returned array length is 0 or less than `pageSize`.
+ * Generic page-based paginator.
+ * Calls `fetcher(page)` repeatedly until fewer than `pageSize` results are returned.
  */
-export async function* paginateByPage<T>(
-    fetchPage: (cursor: string | undefined) => Promise<T[]>,
-    options?: { pageSize?: number; cursorField?: "before" | "after" }
-): AsyncGenerator<T[], void, undefined> {
-    const pageSize = options?.pageSize ?? 50;
-    let cursor: string | undefined;
-    let done = false;
+export async function paginateByPage<T>(
+    fetcher: (page: number) => Promise<T[]>,
+    opts: { pageSize?: number; maxPages?: number } = {},
+): Promise<T[]> {
+    const pageSize = opts.pageSize ?? 50;
+    const maxPages = opts.maxPages ?? 100;
+    const all: T[] = [];
+    let page = 1;
 
-    while (!done) {
-        const batch = await fetchPage(cursor);
-        if (!batch.length) break;
-        yield batch;
-        if (batch.length < pageSize) {
-            done = true;
-            break;
-        }
-        const last = batch[batch.length - 1] as Record<string, unknown>;
-        const ts = last.created_at ?? last.sent_at ?? last.createdAt;
-        if (typeof ts === "string") {
-            cursor = ts;
-        } else {
-            done = true;
-        }
+    while (page <= maxPages) {
+        const items = await fetcher(page);
+        all.push(...items);
+        if (items.length < pageSize) break;
+        page += 1;
     }
+
+    return all;
 }

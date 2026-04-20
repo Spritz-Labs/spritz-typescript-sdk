@@ -17,6 +17,7 @@ import { UsernameModule } from "./username";
 import { WalletModule } from "./wallet";
 import { LeaderboardModule } from "./leaderboard";
 import { PointsModule } from "./points";
+import { SchedulingModule } from "./scheduling";
 
 const DEFAULT_BASE_URL = "https://app.spritz.chat";
 
@@ -42,6 +43,7 @@ export class SpritzClient {
     public readonly wallet: WalletModule;
     public readonly leaderboard: LeaderboardModule;
     public readonly points: PointsModule;
+    public readonly scheduling: SchedulingModule;
 
     constructor(config: SpritzClientConfig) {
         if (!config.apiKey) {
@@ -86,6 +88,7 @@ export class SpritzClient {
         this.wallet = new WalletModule(this.httpClient);
         this.leaderboard = new LeaderboardModule(this.httpClient);
         this.points = new PointsModule(this.httpClient);
+        this.scheduling = new SchedulingModule(this.httpClient);
     }
 
     private applySessionToken(token: string | null): void {

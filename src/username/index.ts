@@ -7,11 +7,15 @@ export class UsernameModule {
         this.http = http;
     }
 
-    /**
-     * Resolve a Spritz username to a wallet address (public).
-     */
-    async resolve(username: string): Promise<{ username: string; address: string }> {
-        const normalized = username.replace(/^@/, "").trim();
-        return this.http.get("/api/username/resolve", { username: normalized });
+    async check(username: string): Promise<{ available: boolean; username: string }> {
+        return this.http.get("/api/username/check", { username });
+    }
+
+    async claim(username: string): Promise<{ success: boolean; username: string }> {
+        return this.http.post("/api/username/claim", { username });
+    }
+
+    async lookup(username: string): Promise<{ address: string | null }> {
+        return this.http.get("/api/username/lookup", { username });
     }
 }
