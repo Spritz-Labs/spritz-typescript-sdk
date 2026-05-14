@@ -58,6 +58,7 @@ export type {
     MessagingType,
     PublicChannel,
     ChannelMember,
+    ChannelBan,
     CreateChannelData,
     ChannelListFilters,
     ChannelMessage,

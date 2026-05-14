@@ -4,6 +4,7 @@ import type {
     ChannelMember,
     ChannelMessage,
     ChannelReaction,
+    ChannelBan,
     CreateChannelData,
     ChannelListFilters,
     SendMessageData,
@@ -252,5 +253,74 @@ export class ChannelsModule {
         }>;
     }> {
         return this.http.get(`/api/channels/${channelIdOrGlobal}/agents`);
+    }
+
+    // ── Moderation ──
+
+    /**
+     * Set a member's role in a channel. Requires admin+ permissions.
+     * Valid roles: "admin", "moderator", "member". Cannot assign "owner".
+     */
+    async setMemberRole(
+        channelId: string,
+        memberAddress: string,
+        role: "admin" | "moderator" | "member"
+    ): Promise<{ success: boolean }> {
+        return this.http.patch(
+            `/api/channels/${channelId}/members/${encodeURIComponent(memberAddress)}/role`,
+            { role }
+        );
+    }
+
+    /**
+     * Kick a member from a channel. Requires moderator+ permissions.
+     */
+    async kickMember(
+        channelId: string,
+        memberAddress: string
+    ): Promise<{ success: boolean }> {
+        return this.http.post(
+            `/api/channels/${channelId}/members/${encodeURIComponent(memberAddress)}/kick`
+        );
+    }
+
+    /**
+     * Ban a user from a channel. Removes them if currently a member. Requires admin+ permissions.
+     */
+    async banUser(
+        channelId: string,
+        userAddress: string,
+        reason?: string
+    ): Promise<{ success: boolean }> {
+        return this.http.post(`/api/channels/${channelId}/ban`, {
+            userAddress,
+            reason,
+        });
+    }
+
+    /**
+     * Unban a user from a channel. Requires admin+ permissions.
+     */
+    async unbanUser(
+        channelId: string,
+        userAddress: string
+    ): Promise<{ success: boolean }> {
+        return this.http.delete(`/api/channels/${channelId}/ban`, {
+            userAddress,
+        });
+    }
+
+    /**
+     * List banned users in a channel. Requires moderator+ permissions.
+     */
+    async getBans(channelId: string): Promise<{ bans: ChannelBan[] }> {
+        return this.http.get(`/api/channels/${channelId}/ban`);
+    }
+
+    /**
+     * Archive a channel (sets is_active to false). Owner only.
+     */
+    async archiveChannel(channelId: string): Promise<{ success: boolean }> {
+        return this.http.post(`/api/channels/${channelId}/archive`);
     }
 }

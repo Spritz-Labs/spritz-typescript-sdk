@@ -148,6 +148,16 @@ export interface ChannelMember {
     username?: string;
     avatar?: string;
     ens_name?: string;
+    role?: "owner" | "admin" | "moderator" | "member";
+}
+
+export interface ChannelBan {
+    id: string;
+    channel_id: string;
+    user_address: string;
+    banned_by: string;
+    reason: string | null;
+    created_at: string;
 }
 
 export interface CreateChannelData {
