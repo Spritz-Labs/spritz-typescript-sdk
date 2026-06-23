@@ -65,6 +65,7 @@ export type {
     ChannelListFilters,
     ChannelMessage,
     SendMessageData,
+    UploadImageResponse,
     MessageListOptions,
     ChannelReaction,
     Poll,

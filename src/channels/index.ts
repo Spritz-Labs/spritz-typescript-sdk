@@ -11,6 +11,7 @@ import type {
     MessageListOptions,
     Poll,
     CreatePollData,
+    UploadImageResponse,
 } from "../types";
 
 export class ChannelsModule {
@@ -54,8 +55,10 @@ export class ChannelsModule {
         if (data.creatorAddress) {
             body.creatorAddress = data.creatorAddress;
         }
+        if (data.ownerAddress) {
+            body.ownerAddress = data.ownerAddress;
+        }
         const raw = await this.http.post<PublicChannel | { channel: PublicChannel }>("/api/channels", body);
-        // Backend returns { channel } so unwrap for consistent API
         if (raw && typeof raw === "object" && "channel" in raw && raw.channel) {
             return raw.channel as PublicChannel;
         }
@@ -256,6 +259,44 @@ export class ChannelsModule {
     }
 
     // ── Moderation ──
+
+    /**
+     * Upload an image for use in channel messages.
+     * Returns the URL to embed in a message with messageType "image".
+     */
+    async uploadImage(
+        file: File,
+        conversationId?: string
+    ): Promise<UploadImageResponse> {
+        const formData = new FormData();
+        formData.append("file", file);
+        if (conversationId) formData.append("conversationId", conversationId);
+        formData.append("originalType", file.type);
+
+        const url = "/api/upload/image";
+        const headers = {
+            "X-API-Key": (this as any).http["apiKey"],
+        } as Record<string, string>;
+        const token = (this as any).http["getSessionToken"]();
+        if (token) headers["Authorization"] = `Bearer ${token}`;
+
+        const fetchImpl = (this as any).http["fetchImpl"] || fetch;
+        const baseUrl = (this as any).http["baseUrl"];
+        const fullUrl = new URL(url, baseUrl).toString();
+
+        const response = await fetchImpl(fullUrl, {
+            method: "POST",
+            headers,
+            body: formData,
+        });
+
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            throw new Error(err.error || `Upload failed (${response.status})`);
+        }
+
+        return response.json();
+    }
 
     /**
      * Set a member's role in a channel. Requires admin+ permissions.

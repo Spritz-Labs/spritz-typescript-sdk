@@ -166,8 +166,10 @@ export interface CreateChannelData {
     emoji?: string;
     category?: string;
     messagingType?: MessagingType;
-    /** Optional. Backend uses session when present; pass when session may not be available (e.g. Bearer token) or to ensure creator is set. */
+    /** Backend uses session when present; pass when session may not be available (e.g. Bearer token) or to ensure creator is set. */
     creatorAddress?: string;
+    /** If set, this address is added as the channel owner/admin (in addition to the creator). Use when the creator is your server but a user should own the channel. */
+    ownerAddress?: string;
 }
 
 export interface ChannelListFilters {
@@ -199,6 +201,12 @@ export interface SendMessageData {
     content: string;
     messageType?: string;
     replyToId?: string;
+}
+
+export interface UploadImageResponse {
+    url: string;
+    path: string;
+    originalType: string;
 }
 
 export interface MessageListOptions {
